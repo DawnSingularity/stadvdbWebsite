@@ -1,0 +1,29 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL_Master_Luzon")
+}
+model appointments {
+  apptid     String    @default(cuid()) @id
+  pxid       String?   @db.VarChar(35)
+  doctorid   String?   @db.VarChar(35)
+  clinicid   String?   @db.VarChar(35)
+  type       String?   @db.VarChar(15)
+  virtual    String?   @db.VarChar(20)
+  status     String?   @db.VarChar(15)
+  QueueDate  DateTime? @db.DateTime
+  StartTime  DateTime? @db.DateTime
+  EndTime    DateTime? @db.DateTime
+  RegionName String?   @db.VarChar(60)
+  Province   String?   @db.VarChar(20)
+  Island     String    @db.VarChar(15)
+}
