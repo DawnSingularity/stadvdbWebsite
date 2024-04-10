@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic"
 
 
 import Image from "next/image";
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import Container from "./components/Container";
 import CheckConnection from "../app/components/CheckConnection"
 import ClientOnly from "./components/ClientOnly";
@@ -45,7 +45,163 @@ export default async function Home() {
   //console.log("slave Luzon")
   //console.log(appointments);
   */
-  
+
+
+
+  //transfer data from slave luzon to main luzon
+  let slaveTrans = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL_Slave_Luzon_TempValues } } })
+  let tempAppointments = await slaveTrans.appointments.findFirst();
+  if(tempAppointments){
+    console.log("found data on luzon");
+    let mainTrans = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL_Master_Luzon } } })
+    try {
+      let appointment = await mainTrans.$transaction([
+        mainTrans.appointments.upsert({
+          where:{
+            apptid: tempAppointments.apptid,
+          },
+          update:{
+            apptid: tempAppointments.apptid,
+            pxid: tempAppointments.pxid,
+            doctorid: tempAppointments.doctorid,
+            clinicid: tempAppointments.clinicid,
+            type: tempAppointments.type,
+            virtual: tempAppointments.virtual,
+            status: tempAppointments.status,
+            QueueDate: tempAppointments.QueueDate,
+            StartTime: tempAppointments.StartTime,
+            EndTime: tempAppointments.EndTime,
+            RegionName: tempAppointments.RegionName,
+            Province: tempAppointments.Province,
+            Island: tempAppointments.Island
+          },
+          create:{
+               apptid: tempAppointments.apptid,
+              pxid: tempAppointments.pxid,
+              doctorid: tempAppointments.doctorid,
+              clinicid: tempAppointments.clinicid,
+              type: tempAppointments.type,
+              virtual: tempAppointments.virtual,
+              status: tempAppointments.status,
+              QueueDate: tempAppointments.QueueDate,
+              StartTime: tempAppointments.StartTime,
+              EndTime: tempAppointments.EndTime,
+              RegionName: tempAppointments.RegionName,
+              Province: tempAppointments.Province,
+              Island: tempAppointments.Island
+          }
+            
+          }), 
+      ],{
+          isolationLevel: "ReadCommitted"
+      })
+    } catch (error) {
+      console.log("something went wrong when inserting/updating the file luzon")
+      return;
+    }
+    
+
+    console.log("it will now do a delete to the temp table");
+    console.log(tempAppointments.apptid);
+    try {
+      let deletedApp = await slaveTrans.appointments.delete({
+        where: {
+          apptid:tempAppointments.apptid
+        }
+      })
+    } catch (error) {
+    console.log("something went wrong when deleteting luzon");
+      
+    }
+    
+
+    console.log("successfully inserted data to main luzon");
+  }
+
+
+
+
+
+
+
+
+
+
+
+  //transfer data from temp vismiz to main vismiz
+  //transfer data from slave luzon to main luzon
+  slaveTrans = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL_Slave_VisMiz_TempValues } } })
+  tempAppointments = await slaveTrans.appointments.findFirst();
+  if(tempAppointments){
+    console.log("found data on vismiz");
+    let mainTrans = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL_Master_VisMiz } } })
+    try {
+      let appointment = await mainTrans.$transaction([
+        mainTrans.appointments.upsert({
+          where:{
+            apptid: tempAppointments.apptid,
+          },
+          update:{
+            apptid: tempAppointments.apptid,
+            pxid: tempAppointments.pxid,
+            doctorid: tempAppointments.doctorid,
+            clinicid: tempAppointments.clinicid,
+            type: tempAppointments.type,
+            virtual: tempAppointments.virtual,
+            status: tempAppointments.status,
+            QueueDate: tempAppointments.QueueDate,
+            StartTime: tempAppointments.StartTime,
+            EndTime: tempAppointments.EndTime,
+            RegionName: tempAppointments.RegionName,
+            Province: tempAppointments.Province,
+            Island: tempAppointments.Island
+          },
+          create:{
+               apptid: tempAppointments.apptid,
+              pxid: tempAppointments.pxid,
+              doctorid: tempAppointments.doctorid,
+              clinicid: tempAppointments.clinicid,
+              type: tempAppointments.type,
+              virtual: tempAppointments.virtual,
+              status: tempAppointments.status,
+              QueueDate: tempAppointments.QueueDate,
+              StartTime: tempAppointments.StartTime,
+              EndTime: tempAppointments.EndTime,
+              RegionName: tempAppointments.RegionName,
+              Province: tempAppointments.Province,
+              Island: tempAppointments.Island
+          }
+            
+          }), 
+      ],{
+          isolationLevel: "ReadCommitted"
+      })
+    } catch (error) {
+      console.log("something went wrong when inserting/updating the file vismiz")
+      return;
+    }
+    
+
+    console.log("it will now do a delete to the temp table");
+    console.log(tempAppointments.apptid);
+    try {
+      let deletedApp = await slaveTrans.appointments.delete({
+        where: {
+          apptid:tempAppointments.apptid
+        }
+      })
+    } catch (error) {
+    console.log("something went wrong when deleteting vismiz");
+      
+    }
+    
+
+    console.log("successfully inserted data to main vismiz");
+  }
+
+
+
+
 
 
   let client1 = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL_Master_VisMiz } } })
@@ -58,6 +214,8 @@ export default async function Home() {
     }
   });
 
+
+  
   return (
     <ClientOnly>
       <Container>
