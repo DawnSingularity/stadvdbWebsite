@@ -207,7 +207,6 @@ export default async function Home({searchParams}: HomeProps) {
 
   
   const appointments = await getAppointmentById(searchParams);
-console.log(appointments);
   
   return (
     <ClientOnly>

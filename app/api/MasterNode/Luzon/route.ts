@@ -70,35 +70,13 @@ export async function POST (
     if(!isMaindown){
         //main is up
         console.log("main is up")
-        try {
-            if(apptid==''){
-                appointment = await prisma.$transaction([
-                    prisma.appointments.create({
-                        data:{
-                            pxid,
-                            doctorid,
-                            clinicid,
-                            type,
-                            virtual,
-                            status,
-                            QueueDate: formattedQueueDate,
-                            StartTime: formattedStartTime,
-                            EndTime: formattedEndTime,
-                            RegionName,
-                            Province,
-                            Island
-                        }
-                    })
-                ],{
-                    isolationLevel
-                }
-                )
-            }else{
-                    appointment = await prisma.$transaction([
-                        prisma.appointments.update({
-                            where:{
-                                apptid
-                            },
+        if(Island==='Luzon'){
+            console.log("luzon");
+            let mainLuzon = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL_Master_Luzon } } })
+            try {
+                if(apptid==''){
+                    appointment = await mainLuzon.$transaction([
+                        mainLuzon.appointments.create({
                             data:{
                                 pxid,
                                 doctorid,
@@ -118,14 +96,104 @@ export async function POST (
                         isolationLevel
                     }
                     )
+                }else{
+                    console.log("update");
+                    console.log(apptid);
+                        appointment = await mainLuzon.$transaction([
+                            mainLuzon.appointments.update({
+                                where:{
+                                    apptid
+                                },
+                                data:{
+                                    pxid,
+                                    doctorid,
+                                    clinicid,
+                                    type,
+                                    virtual,
+                                    status,
+                                    QueueDate: formattedQueueDate,
+                                    StartTime: formattedStartTime,
+                                    EndTime: formattedEndTime,
+                                    RegionName,
+                                    Province,
+                                    Island
+                                }
+                            })
+                        ],{
+                            isolationLevel
+                        }
+                        )
+                    
+                }
                 
+                
+            } catch(error: any){
+                throw new Error(error);
             }
-            
-            
-        } catch(error: any){
-            throw new Error("something went wrong when inserting");
+            console.log("added data to main");
+        }else{
+
+            try {
+                let mainVisMiz = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL_Master_VisMiz } } })
+
+                if(apptid==''){
+                    appointment = await mainVisMiz.$transaction([
+                        mainVisMiz.appointments.create({
+                            data:{
+                                pxid,
+                                doctorid,
+                                clinicid,
+                                type,
+                                virtual,
+                                status,
+                                QueueDate: formattedQueueDate,
+                                StartTime: formattedStartTime,
+                                EndTime: formattedEndTime,
+                                RegionName,
+                                Province,
+                                Island
+                            }
+                        })
+                    ],{
+                        isolationLevel
+                    }
+                    )
+                }else{
+    
+                        appointment = await mainVisMiz.$transaction([
+                            mainVisMiz.appointments.update({
+                                where:{
+                                    apptid
+                                },
+                                data:{
+                                    pxid,
+                                    doctorid,
+                                    clinicid,
+                                    type,
+                                    virtual,
+                                    status,
+                                    QueueDate: formattedQueueDate,
+                                    StartTime: formattedStartTime,
+                                    EndTime: formattedEndTime,
+                                    RegionName,
+                                    Province,
+                                    Island
+                                }
+                            })
+                        ],{
+                            isolationLevel
+                        }
+                        )
+                    
+                }
+                
+                
+            } catch(error: any){
+                throw new Error(error);
+            }
+            console.log("added data to main");
         }
-        console.log("added data to main");
+        
     }else{
         if(Island==='Luzon'){
 
@@ -166,36 +234,34 @@ export async function POST (
                         }
                         )
                     }else{
-                            appointment = await LuzonTempDB.$transaction([
-                                LuzonTempDB.appointments.update({
-                                    where:{
-                                        apptid
-                                    },
-                                    data:{
-                                        pxid,
-                                        doctorid,
-                                        clinicid,
-                                        type,
-                                        virtual,
-                                        status,
-                                        QueueDate: formattedQueueDate,
-                                        StartTime: formattedStartTime,
-                                        EndTime: formattedEndTime,
-                                        RegionName,
-                                        Province,
-                                        Island
-                                    }
-                                })
-                            ],{
-                                isolationLevel
+                        appointment = await LuzonTempDB.$transaction([
+                            LuzonTempDB.appointments.update({
+                                where:{
+                                    apptid
+                                },
+                                data:{
+                                    pxid,
+                                    doctorid,
+                                    clinicid,
+                                    type,
+                                    virtual,
+                                    status,
+                                    QueueDate: formattedQueueDate,
+                                    StartTime: formattedStartTime,
+                                    EndTime: formattedEndTime,
+                                    RegionName,
+                                    Province,
+                                    Island
+                                }
                             })
-                        
-                        
+                        ],{
+                            isolationLevel
+                        })
                     }
                     
                     
                 } catch(error: any){
-                    throw new Error("something went wrong when inserting");
+                    throw new Error(error);
                 }
                 console.log("successfully added to temp luzon");
 
