@@ -46,6 +46,9 @@ const InputAppointments = () => {
         Province:'',
         Island:'',
         isolationLevel:'',
+        disableMainNode:'',
+        disableSlaveNode1:'',
+        disableSlaveNode2:''
     }
 })
 
@@ -54,11 +57,16 @@ const onSubmit: SubmitHandler<FieldValues> = (data) =>{
         return;
     }
     setIsLoading(true);
-    data.isolationLevel = "ReadUncommitted";
-    //data.isolationLevel = 'ReadCommitted';
-    //data.isolationLevel = 'RepeatableRead'
-    //data.isolationLevel = 'Serializable';
-    
+    if(data.disableMainNode > 1){
+        data.disableMainNode=0
+    }
+    if(data.disableSlaveNode1 > 1){
+        data.disableSlaveNode1=0
+    }
+    if(data.disableSlaveNode2 > 1){
+        data.disableSlaveNode2=0
+    }
+
 
 
     axios.post('/api/MasterNode/Luzon', data)
@@ -79,6 +87,51 @@ const onSubmit: SubmitHandler<FieldValues> = (data) =>{
 
     let bodyContent=(
         <div className="flex flex-col gap-8">
+            <Input 
+                id="disableMainNode"
+                label="disableMainNode"
+                disabled={isLoading}
+                register={register}
+                errors={errors}
+                required
+                type="number"
+                
+            />
+
+            <Input 
+                id="disableSlaveNode1"
+                label="disableSlaveNode1"
+                disabled={isLoading}
+                register={register}
+                errors={errors}
+                required
+                type="number"
+            />
+
+            <Input 
+                id="disableSlaveNode2"
+                label="disableSlaveNode2"
+                disabled={isLoading}
+                register={register}
+                errors={errors}
+                required
+                type="number"
+            />
+            <select
+                id="isolationLevel"
+                disabled={isLoading}
+                {...register("isolationLevel", { required: true })} // Register the select input with react-hook-form
+                className="p-2 border rounded-md" // Add any additional styles as needed
+                required
+            >
+                <option value="" disabled selected>Select an isolationLevel</option>
+                <option value="ReadUncommitted">ReadUncommitted</option>
+
+                <option value="ReadCommitted">ReadCommitted</option>
+                <option value="RepeatableRead">RepeatableRead</option>
+                <option value="Serializable">Serializable</option>
+            </select>
+
             <Input 
                 id="pxid"
                 label="pxid"

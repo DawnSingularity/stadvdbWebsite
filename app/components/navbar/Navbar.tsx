@@ -11,7 +11,7 @@ const Navbar = () => {
         openModal.onOpen();
     }, [openModal])
     return (
-        <div className ="fixed w-full bg-white z-10 shadow-sm">
+        <div className ="w-full bg-white z-10 shadow-sm">
             <div className="
                 py-4
                 border-b-[1px]
@@ -19,9 +19,11 @@ const Navbar = () => {
             <Container>
                 <div
                     onClick={onPost}
-                    className=" hidden md:block text-sm font-semibold py-3 px-4 rounded-full hover:bg-neutral-100 transition cursor-pointer">
-                    Insert stuff in to database
+                    className="hidden md:block bg-blue-500 text-white text-sm font-semibold py-3 px-4 rounded-full hover:bg-blue-600 transition cursor-pointer"
+                    >
+                    Insert stuff into database
                 </div>
+
                 
 
                 

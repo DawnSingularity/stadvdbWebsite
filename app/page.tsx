@@ -5,8 +5,9 @@ import Image from "next/image";
 import { PrismaClient } from '@prisma/client';
 import Container from "./components/Container";
 import CheckConnection from "../app/components/CheckConnection"
+import ClientOnly from "./components/ClientOnly";
 
-
+import AppointmentRow from "./components/AppointmentRow";
 
 
 // Create a Prisma Client instance
@@ -45,14 +46,43 @@ export default async function Home() {
   //console.log(appointments);
   */
   
+
+
+  let client1 = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL_Master_VisMiz } } })
+  let appointments = await client1.appointments.findMany({
+    take: 10, // Specify the number of records to retrieve
+    where:{
+      NOT:{
+        StartTime: null
+      }
+    }
+  });
+
   return (
-    <Container>
-      this is the master node luzon
-
-      this is the slave 1 node 
-      
-      this is the slave 2
-
-    </Container>
+    <ClientOnly>
+      <Container>
+        <div className="appointments-container">
+          {appointments.map((appointment) => (
+            <AppointmentRow 
+              key={appointment.apptid} 
+              apptid={appointment.apptid} 
+              pxid={appointment.pxid}  
+              doctorid={appointment.doctorid}  
+              clinicid={appointment.clinicid}  
+              type={appointment.type}  
+              virtual={appointment.virtual}  
+              status={appointment.status}  
+              QueueDate={appointment.QueueDate}  
+              StartTime={appointment.StartTime}  
+              EndTime={appointment.EndTime}  
+              RegionName={appointment.RegionName}  
+              Province={appointment.Province}  
+              Island={appointment.Island}  
+              
+            />
+          ))}
+        </div>
+      </Container>
+    </ClientOnly>
   );
 }

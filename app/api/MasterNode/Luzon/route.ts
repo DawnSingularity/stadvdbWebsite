@@ -29,17 +29,26 @@ export async function POST (
         RegionName,
         Province,
         Island,
-        isolationLevel
+        isolationLevel,
+        disableMainNode,
+        disableSlaveNode1,
+        disableSlaveNode2
     } = body;
     const formattedQueueDate = new Date(QueueDate).toISOString();
     const formattedStartTime = new Date(StartTime).toISOString();
     const formattedEndTime = new Date(EndTime).toISOString();
+    body.disableMainNode = parseInt(body.disableMainNode);
+    body.disableSlaveNode1 = parseInt(body.disableSlaveNode1);
+    body.disableSlaveNode2 = parseInt(body.disableSlaveNode2);
 
     let appointment
-    
-    let isMaindown = await CheckConnection({url:process.env.DATABASE_URL_Master_Luzon, label:"master luzon"}); //main is down 1 //main is active 0
-
-
+    let isMaindown = await CheckConnection({url:process.env.DATABASE_URL_Master_Luzon, label:"master luzon"});
+     //main is down 1 //main is active 0
+    if(disableMainNode == 1){
+        isMaindown = 1
+        console.log("server is virtually down master" + disableMainNode)
+    }
+    console.log(body);
 
   //let slave_1_status = await CheckConnection({url:process.env.DATABASE_URL_Slave_Luzon, label:'Slave 1 Luzon'});
   //let slave_1_temp_status = await CheckConnection({url:process.env.DATABASE_URL_Slave_Luzon_TempValues, label:'Slave 1 temp Luzon'});
@@ -79,8 +88,13 @@ export async function POST (
         console.log("added data to main");
     }else{
         if(Island==='Luzon'){
-            let isLuzonTempDown = await CheckConnection({url:process.env.DATABASE_URL_Slave_Luzon_TempValues}); // 1 is down // 0 is up
 
+            let isLuzonTempDown = await CheckConnection({url:process.env.DATABASE_URL_Slave_Luzon_TempValues}); // 1 is down // 0 is up
+            if(disableSlaveNode1 == 1){
+                isLuzonTempDown = 1
+                console.log("server is virtually down slave 1" + disableSlaveNode1)
+                console.log("Luzon Temp db is down " + isLuzonTempDown)
+            }
             console.log("luzon status" + isLuzonTempDown);
             if(!isLuzonTempDown){
                 //it is not down
@@ -122,7 +136,9 @@ export async function POST (
                 console.log("both server are down");
                 console.log("check if vismiz is up");
                 let isVisMizTempDown = await CheckConnection({url:process.env.DATABASE_URL_Slave_VisMiz_TempValues});
-
+                if(disableSlaveNode2 == 1){
+                    isVisMizTempDown = 1
+                }
                 console.log("Status of vismiz " + isVisMizTempDown)
 
                 if(!isVisMizTempDown){
@@ -167,6 +183,9 @@ export async function POST (
         }else{
             //this is vizmiz temp
             let isVisMizTempDown = await CheckConnection({url:process.env.DATABASE_URL_Slave_VisMiz_TempValues});
+            if(disableSlaveNode2 == 1){
+                isVisMizTempDown = 1
+            }
             console.log("VisMiz status " + isVisMizTempDown);
             if(!isVisMizTempDown){
                 //it is not down
@@ -210,5 +229,8 @@ export async function POST (
     
     
     return NextResponse.json(appointment);
+    
+
+
     
 }
