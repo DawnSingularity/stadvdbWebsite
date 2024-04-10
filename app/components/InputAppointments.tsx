@@ -33,6 +33,7 @@ const InputAppointments = () => {
     reset
 } = useForm<FieldValues>({
     defaultValues:{
+        apptid:'',
         pxid:'',
         doctorid:'',
         clinicid:'',
@@ -57,13 +58,13 @@ const onSubmit: SubmitHandler<FieldValues> = (data) =>{
         return;
     }
     setIsLoading(true);
-    if(data.disableMainNode > 1){
+    if(data.disableMainNode > 1 && data.disableMainNode < 0){
         data.disableMainNode=0
     }
-    if(data.disableSlaveNode1 > 1){
+    if(data.disableSlaveNode1 > 1 && data.disableSlaveNode1 < 0){
         data.disableSlaveNode1=0
     }
-    if(data.disableSlaveNode2 > 1){
+    if(data.disableSlaveNode2 > 1 && data.disableSlaveNode2 < 0){
         data.disableSlaveNode2=0
     }
 
@@ -131,6 +132,15 @@ const onSubmit: SubmitHandler<FieldValues> = (data) =>{
                 <option value="RepeatableRead">RepeatableRead</option>
                 <option value="Serializable">Serializable</option>
             </select>
+
+
+            <Input 
+                id="apptid"
+                label="apptid (leave blank if you want to insert)"
+                disabled={isLoading}
+                register={register}
+                errors={errors}
+            />
 
             <Input 
                 id="pxid"

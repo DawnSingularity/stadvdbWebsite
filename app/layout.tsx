@@ -23,7 +23,9 @@ export default function RootLayout({
         
         <Navbar />
         <InputAppointments />
-        {children}</body>
+        {children}
+
+        </body>
 
     </html>
   );

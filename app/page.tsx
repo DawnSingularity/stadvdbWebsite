@@ -1,17 +1,19 @@
 export const dynamic = "force-dynamic"
-
-
-import Image from "next/image";
-import { Prisma, PrismaClient } from '@prisma/client';
+import {PrismaClient } from '@prisma/client';
 import Container from "./components/Container";
 import CheckConnection from "../app/components/CheckConnection"
 import ClientOnly from "./components/ClientOnly";
 
 import AppointmentRow from "./components/AppointmentRow";
+import getAppointmentById, { IdParams } from "./api/actions/getAppointmentsByID";
 
+
+interface HomeProps{
+  searchParams: IdParams
+}
 
 // Create a Prisma Client instance
-export default async function Home() {
+export default async function Home({searchParams}: HomeProps) {
 
 
   /*
@@ -203,18 +205,9 @@ export default async function Home() {
 
 
 
-
-  let client1 = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL_Master_VisMiz } } })
-  let appointments = await client1.appointments.findMany({
-    take: 10, // Specify the number of records to retrieve
-    where:{
-      NOT:{
-        StartTime: null
-      }
-    }
-  });
-
-
+  
+  const appointments = await getAppointmentById(searchParams);
+console.log(appointments);
   
   return (
     <ClientOnly>

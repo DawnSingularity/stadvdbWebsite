@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import CheckConnection from "@/app/components/CheckConnection";
+import toast from "react-hot-toast";
 
 /*
 export async function GET() {
@@ -17,6 +18,7 @@ export async function POST (
     const prisma = new PrismaClient();
     const body = await request.json();
     const {
+        apptid,
         pxid,
         doctorid,
         clinicid,
@@ -50,6 +52,15 @@ export async function POST (
     }
     console.log(body);
 
+
+
+    if(apptid==''){
+        console.log(apptid)
+        console.log("apptid is nothing");
+    }else{
+        console.log(apptid)
+        console.log("it has something")
+    }
   //let slave_1_status = await CheckConnection({url:process.env.DATABASE_URL_Slave_Luzon, label:'Slave 1 Luzon'});
   //let slave_1_temp_status = await CheckConnection({url:process.env.DATABASE_URL_Slave_Luzon_TempValues, label:'Slave 1 temp Luzon'});
 
@@ -60,27 +71,56 @@ export async function POST (
         //main is up
         console.log("main is up")
         try {
-            appointment = await prisma.$transaction([
-                prisma.appointments.create({
-                    data:{
-                        pxid,
-                        doctorid,
-                        clinicid,
-                        type,
-                        virtual,
-                        status,
-                        QueueDate: formattedQueueDate,
-                        StartTime: formattedStartTime,
-                        EndTime: formattedEndTime,
-                        RegionName,
-                        Province,
-                        Island
+            if(apptid==''){
+                appointment = await prisma.$transaction([
+                    prisma.appointments.create({
+                        data:{
+                            pxid,
+                            doctorid,
+                            clinicid,
+                            type,
+                            virtual,
+                            status,
+                            QueueDate: formattedQueueDate,
+                            StartTime: formattedStartTime,
+                            EndTime: formattedEndTime,
+                            RegionName,
+                            Province,
+                            Island
+                        }
+                    })
+                ],{
+                    isolationLevel
+                }
+                )
+            }else{
+                    appointment = await prisma.$transaction([
+                        prisma.appointments.update({
+                            where:{
+                                apptid
+                            },
+                            data:{
+                                pxid,
+                                doctorid,
+                                clinicid,
+                                type,
+                                virtual,
+                                status,
+                                QueueDate: formattedQueueDate,
+                                StartTime: formattedStartTime,
+                                EndTime: formattedEndTime,
+                                RegionName,
+                                Province,
+                                Island
+                            }
+                        })
+                    ],{
+                        isolationLevel
                     }
-                })
-            ],{
-                isolationLevel
+                    )
+                
             }
-            )
+            
             
         } catch(error: any){
             throw new Error("something went wrong when inserting");
@@ -102,27 +142,57 @@ export async function POST (
                 try {
                     body.isolationLevel="ReadUncommitted"
                     let LuzonTempDB = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL_Slave_Luzon_TempValues } } })
-                    appointment = await LuzonTempDB.$transaction([
-                        LuzonTempDB.appointments.create({
-                            data:{
-                                pxid,
-                                doctorid,
-                                clinicid,
-                                type,
-                                virtual,
-                                status,
-                                QueueDate: formattedQueueDate,
-                                StartTime: formattedStartTime,
-                                EndTime: formattedEndTime,
-                                RegionName,
-                                Province,
-                                Island
-                            }
-                        })
-                    ],{
-                        isolationLevel
+
+                    if(apptid==''){
+                        appointment = await LuzonTempDB.$transaction([
+                            LuzonTempDB.appointments.create({
+                                data:{
+                                    pxid,
+                                    doctorid,
+                                    clinicid,
+                                    type,
+                                    virtual,
+                                    status,
+                                    QueueDate: formattedQueueDate,
+                                    StartTime: formattedStartTime,
+                                    EndTime: formattedEndTime,
+                                    RegionName,
+                                    Province,
+                                    Island
+                                }
+                            })
+                        ],{
+                            isolationLevel
+                        }
+                        )
+                    }else{
+                            appointment = await LuzonTempDB.$transaction([
+                                LuzonTempDB.appointments.update({
+                                    where:{
+                                        apptid
+                                    },
+                                    data:{
+                                        pxid,
+                                        doctorid,
+                                        clinicid,
+                                        type,
+                                        virtual,
+                                        status,
+                                        QueueDate: formattedQueueDate,
+                                        StartTime: formattedStartTime,
+                                        EndTime: formattedEndTime,
+                                        RegionName,
+                                        Province,
+                                        Island
+                                    }
+                                })
+                            ],{
+                                isolationLevel
+                            })
+                        
+                        
                     }
-                    )
+                    
                     
                 } catch(error: any){
                     throw new Error("something went wrong when inserting");
@@ -147,9 +217,10 @@ export async function POST (
                     //it is not down
                     try {
                         body.isolationLevel="ReadUncommitted"
-                        let LuzonTempDB = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL_Slave_VisMiz_TempValues } } })
-                        appointment = await LuzonTempDB.$transaction([
-                            LuzonTempDB.appointments.create({
+                        let VisMizTempDB = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL_Slave_VisMiz_TempValues } } })
+                        if(apptid==''){
+                        appointment = await VisMizTempDB.$transaction([
+                            VisMizTempDB.appointments.create({
                                 data:{
                                     pxid,
                                     doctorid,
@@ -167,8 +238,34 @@ export async function POST (
                             })
                         ],{
                             isolationLevel
+                        })
+
+                        }else{
+                                appointment = await VisMizTempDB.$transaction([
+                                    VisMizTempDB.appointments.update({
+                                        where:{
+                                            apptid
+                                        },
+                                        data:{
+                                            pxid,
+                                            doctorid,
+                                            clinicid,
+                                            type,
+                                            virtual,
+                                            status,
+                                            QueueDate: formattedQueueDate,
+                                            StartTime: formattedStartTime,
+                                            EndTime: formattedEndTime,
+                                            RegionName,
+                                            Province,
+                                            Island
+                                        }
+                                    })
+                                ],{
+                                    isolationLevel
+                                })
                         }
-                        )
+                        
                         
                     } catch(error: any){
                         throw new Error("something went wrong when inserting");
@@ -192,28 +289,54 @@ export async function POST (
                 console.log("vismiz is up second else statemnt");
                 try {
                     body.isolationLevel="ReadUncommitted"
-                    let LuzonTempDB = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL_Slave_VisMiz_TempValues } } })
-                    appointment = await LuzonTempDB.$transaction([
-                        LuzonTempDB.appointments.create({
-                            data:{
-                                pxid,
-                                doctorid,
-                                clinicid,
-                                type,
-                                virtual,
-                                status,
-                                QueueDate: formattedQueueDate,
-                                StartTime: formattedStartTime,
-                                EndTime: formattedEndTime,
-                                RegionName,
-                                Province,
-                                Island
-                            }
+                    let VisMizTempDB = new PrismaClient({ datasources: { db: { url: process.env.DATABASE_URL_Slave_VisMiz_TempValues } } })
+                    if(apptid==''){
+                        appointment = await VisMizTempDB.$transaction([
+                            VisMizTempDB.appointments.create({
+                                data:{
+                                    pxid,
+                                    doctorid,
+                                    clinicid,
+                                    type,
+                                    virtual,
+                                    status,
+                                    QueueDate: formattedQueueDate,
+                                    StartTime: formattedStartTime,
+                                    EndTime: formattedEndTime,
+                                    RegionName,
+                                    Province,
+                                    Island
+                                }
+                            })
+                        ],{
+                            isolationLevel
                         })
-                    ],{
-                        isolationLevel
+                    }else{
+                            appointment = await VisMizTempDB.$transaction([
+                                VisMizTempDB.appointments.update({
+                                    where:{
+                                        apptid
+                                    },
+                                    data:{
+                                        pxid,
+                                        doctorid,
+                                        clinicid,
+                                        type,
+                                        virtual,
+                                        status,
+                                        QueueDate: formattedQueueDate,
+                                        StartTime: formattedStartTime,
+                                        EndTime: formattedEndTime,
+                                        RegionName,
+                                        Province,
+                                        Island
+                                    }
+                                })
+                            ],{
+                                isolationLevel
+                            })
                     }
-                    )
+                    
                     
                 } catch(error: any){
                     throw new Error("something went wrong when inserting");
